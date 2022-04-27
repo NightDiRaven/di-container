@@ -1,0 +1,58 @@
+{
+  "name": "di-container",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "homepage": "https://github.com/nightdiraven/di-container#readme",
+  "bugs": {
+    "url": "https://github.com/nightdiraven/di-container/issues"
+  },
+  "license": "MIT",
+  "author": "Ivan Dolgov <ivan@umecode.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nightdiraven/di-container.git"
+  },
+  "funding": "https://github.com/sponsors/nightdiraven",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./dist/*",
+        "./dist/index.d.ts"
+      ]
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "rimraf dist && unbuild",
+    "dev": "unbuild --stub",
+    "lint": "eslint .",
+    "start": "esno src/index.ts",
+    "test": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@babel/types": "^7.17.0",
+    "@types/node": "^17.0.23",
+    "eslint": "^8.13.0",
+    "esno": "^0.14.1",
+    "rimraf": "^3.0.2",
+    "typescript": "^4.6.3",
+    "unbuild": "^0.7.2",
+    "vite": "^2.9.1",
+    "vitest": "^0.9.3"
+  }
+}
