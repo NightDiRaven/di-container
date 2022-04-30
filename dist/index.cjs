@@ -22,18 +22,6 @@ class DIContainer {
         return this.addRegistration(name, () => value, config);
     }
   }
-  registerSingleton(name, classConstructor, params) {
-    this.register(name, classConstructor, { singleton: true, params });
-  }
-  registerClass(name, classConstructor) {
-    this.register(name, classConstructor);
-  }
-  registerFunction(name, functionFactory) {
-    this.register(name, functionFactory);
-  }
-  registerValue(name, value) {
-    this.register(name, value, { singleton: true });
-  }
   aliases(name, aliases) {
     const registration = this.getRegistration(name);
     for (let alias of aliases) {

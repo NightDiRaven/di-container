@@ -35,7 +35,7 @@ container.register(SomeClassKey, SomeClass)
 const instance: ISomeClass = container.get(SomeClassKey) // It's autotyped for ISomeClass becouse of Symbol key
 
 // Or use string keys but return type need set manually
-container.registerSingleton('some-class2', SomeClass2)
+container.register('some-class2', SomeClass2)
 // Somewhere...
 const instance2: ISomeClass2 = container.get<ISomeClass2>('some-class2')
 ```
