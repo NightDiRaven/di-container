@@ -44,7 +44,7 @@ const container = new DIContainer()
 
 You can use Symbols or strings as keys, but only with Symbols result will autotyped
 ```ts
-// Use Symbols keys for auto typing result like or string
+// Use Symbols keys for auto typing result
 const SomeClassKey = Symbol() as DiContainerKey<ISomeClass>
 
 container.register(SomeClassKey, SomeClass)
@@ -55,17 +55,6 @@ const instance: ISomeClass = container.get(SomeClassKey) // It's autotyped for I
 container.register('some-class2', SomeClass2)
 // Somewhere...
 const instance2: ISomeClass2 = container.get<ISomeClass2>('some-class2')
-```
-
-Full example
-```ts
-container.register('filesystem', SomeFileSystemClass, {
-  singleton: true, //Optional: On first get it will stored and after return stored value
-  aliases: ['filesystem', 'same-fs'], //Optional: Any aliases for get
-  params: {defaultValue: 22} //Optional: this object will pass into class constructor or function call, ignored for other value types
-})
-
-container.get('fs') === container.get('filesystem') === container.get('same-fs') // true
 ```
 
 Register classes
