@@ -30,7 +30,7 @@ You can use Symbols or strings as keys, but only with Symbols result will autoty
 // Use Symbols keys for auto typing result like or string
 const SomeClassKey = Symbol() as DiContainerKey<ISomeClass>
 
-container.registerClass(SomeClassKey, SomeClass)
+container.register(SomeClassKey, SomeClass)
 // Somewhere...
 const instance: ISomeClass = container.get(SomeClassKey) // It's autotyped for ISomeClass becouse of Symbol key
 
@@ -42,9 +42,10 @@ const instance2: ISomeClass2 = container.get<ISomeClass2>('some-class2')
 
 Use aliases if it needed by setting pair register key and new alias
 ```ts
-container.registerSingleton('filesystem', SomeFileSystemClass)
-container.alias('fs', 'filesystem')
-container.alias('fs', 'same-fs')
+container.register('filesystem', SomeFileSystemClass, {aliases: ['filesystem', 'same-fs']})
+
+// Or set it up after register like this
+container.aliases('fs', ['filesystem', 'same-fs'])
 
 container.get('fs') === container.get('filesystem') === container.get('same-fs') // true
 ```

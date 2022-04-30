@@ -1,45 +1,36 @@
-import type { RegistrationType } from './DIContainer'
-
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface DIContainerKey<T> extends Symbol {
 
 }
 
-export interface Registration {
-  type: RegistrationType
+export type ContainerName<T> = string | DIContainerKey<T>
+
+export interface RegistrationConfiguration<T> {
+  singleton?: boolean,
+  params?: Record<string, any>,
+  aliases?: ContainerName<T>[]
 }
 
-export interface RegistrationFunction<T> extends Registration {
-  type: RegistrationType.FUNCTION
-  executor: (...args: any[]) => T
-}
-
-export declare interface RegistrationFactory<T> extends Registration {
-  type: RegistrationType.FACTORY
-  ClassDeclaration: new (...args: any[]) => T
-}
-
-export declare interface RegistrationSingleton<T> extends Registration {
-  type: RegistrationType.SINGLETON
-  ClassDeclaration: new (...args: any[]) => T
+export interface Registration<T> {
+  executor: (params?: Record<string, any>) => T,
+  persist: boolean
   instance?: T
-  args: any[]
-}
-
-export declare interface RegistrationValue extends Registration {
-  type: RegistrationType.VALUE
-  value: any
+  params?: Record<string, any>
+  aliases: Set<ContainerName<T>>
+  unregister: () => void
 }
 
 export interface DIContainerInterface {
-  registerSingleton(name: string | DIContainerKey<any>, classConstructor: any): void
+  register<T>(name: ContainerName<T>, classConstructor: T, config?: RegistrationConfiguration<T>): void
 
-  registerClass(name: string | DIContainerKey<any>, classConstructor: any): void
+  registerSingleton(name: ContainerName<any>, classConstructor: any, params: any[]): void
 
-  registerFunction(name: string | DIContainerKey<any>, classConstructorOrCallback: () => any): void
+  registerClass(name: ContainerName<any>, classConstructor: any): void
 
-  alias(name: string | DIContainerKey<any>, alias: string | DIContainerKey<any>): void
+  registerFunction(name: ContainerName<any>, classConstructorOrCallback: () => any): void
+
+  aliases(name: ContainerName<any>, aliases: Iterable<ContainerName<any>>): void
 
   get<T>(name: string | DIContainerKey<T>, args?: any[]): T
 }

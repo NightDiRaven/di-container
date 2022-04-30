@@ -57,5 +57,8 @@
   },
   "directories": {
     "test": "test"
+  },
+  "dependencies": {
+    "is-class": "^0.0.9"
   }
 }

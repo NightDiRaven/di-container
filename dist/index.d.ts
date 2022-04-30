@@ -1,34 +1,55 @@
 interface DIContainerKey<T> extends Symbol {
 }
-interface Registration {
-    type: RegistrationType;
+declare type ContainerName<T> = string | DIContainerKey<T>;
+interface RegistrationConfiguration<T> {
+    singleton?: boolean;
+    params?: Record<string, any>;
+    aliases?: ContainerName<T>[];
 }
 interface DIContainerInterface {
-    registerSingleton(name: string | DIContainerKey<any>, classConstructor: any): void;
-    registerClass(name: string | DIContainerKey<any>, classConstructor: any): void;
-    registerFunction(name: string | DIContainerKey<any>, classConstructorOrCallback: () => any): void;
-    alias(name: string | DIContainerKey<any>, alias: string | DIContainerKey<any>): void;
+    register<T>(name: ContainerName<T>, classConstructor: T, config?: RegistrationConfiguration<T>): void;
+    registerSingleton(name: ContainerName<any>, classConstructor: any, params: any[]): void;
+    registerClass(name: ContainerName<any>, classConstructor: any): void;
+    registerFunction(name: ContainerName<any>, classConstructorOrCallback: () => any): void;
+    aliases(name: ContainerName<any>, aliases: Iterable<ContainerName<any>>): void;
     get<T>(name: string | DIContainerKey<T>, args?: any[]): T;
 }
 
-declare enum RegistrationType {
-    FACTORY = "FACTORY",
-    FUNCTION = "FUNCTION",
-    SINGLETON = "SINGLETON",
-    VALUE = "VALUE"
-}
 declare class DIContainer implements DIContainerInterface {
-    registrations: Map<string | DIContainerKey<any>, Registration>;
-    aliases: Map<string | DIContainerKey<any>, string | DIContainerKey<any>>;
+    private readonly registrations;
     constructor();
-    getProxy(): { [key in keyof this["registrations"] & keyof this["aliases"]]: this["registrations"]; };
-    registerSingleton(name: string | DIContainerKey<any>, classConstructor: any, ...args: any[]): void;
-    registerClass(name: string | DIContainerKey<any>, classConstructor: any): void;
-    registerFunction(name: string | DIContainerKey<any>, functionFactory: (...args: any[]) => any): void;
-    registerValue(name: string | DIContainerKey<any>, value: any): void;
-    alias(name: string | DIContainerKey<any>, alias: string | DIContainerKey<any>): void;
-    get<T>(name: string | DIContainerKey<T>, args?: any[]): T;
-    private getName;
+    register<T>(name: string | DIContainerKey<T>, value: any, config?: RegistrationConfiguration<T>): void;
+    /**
+     * @deprecated use register instead
+     * @param name
+     * @param classConstructor
+     * @param params
+     */
+    registerSingleton(name: ContainerName<any>, classConstructor: any, params: any[]): void;
+    /**
+     * @deprecated use register instead
+     * @param name
+     * @param classConstructor
+     */
+    registerClass(name: ContainerName<any>, classConstructor: any): void;
+    /**
+     * @deprecated use register instead
+     * @param name
+     * @param functionFactory
+     */
+    registerFunction(name: ContainerName<any>, functionFactory: (...args: any[]) => any): void;
+    /**
+     *
+     * @deprecated use register instead
+     * @param name
+     * @param value
+     */
+    registerValue(name: ContainerName<any>, value: any): void;
+    aliases(name: ContainerName<any>, aliases: Iterable<ContainerName<any>>): void;
+    unregister(name: ContainerName<any>): void;
+    get<T>(name: string | DIContainerKey<T>, params?: Record<string, any>): T;
+    private addRegistration;
+    private getRegistration;
 }
 
 export { DIContainer, DIContainerKey };

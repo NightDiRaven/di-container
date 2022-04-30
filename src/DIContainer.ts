@@ -1,111 +1,107 @@
-import type {
-  DIContainerInterface,
-  DIContainerKey,
-  Registration,
-  RegistrationFactory,
-  RegistrationFunction,
-  RegistrationSingleton, RegistrationValue,
-} from './types'
+import type {ContainerName, DIContainerInterface, DIContainerKey, Registration, RegistrationConfiguration,} from './types'
+import isClass from "is-class";
 
-export enum RegistrationType {
-  FACTORY = 'FACTORY',
-  FUNCTION = 'FUNCTION',
-  SINGLETON = 'SINGLETON',
-  VALUE = 'VALUE',
-}
 
 class DIContainer implements DIContainerInterface {
-  private registrations: Map<string | DIContainerKey<any>, Registration>
-  private aliases: Map<string | DIContainerKey<any>, string | DIContainerKey<any>>
+  private readonly registrations: Map<ContainerName<any>, Registration<any>>
 
   constructor() {
     this.registrations = new Map()
-    this.aliases = new Map()
   }
 
-  registerSingleton(name: string | DIContainerKey<any>, classConstructor: any, ...args : any[]) {
-    const registration: RegistrationSingleton<InstanceType<typeof classConstructor>> = {
-      type: RegistrationType.SINGLETON,
-      ClassDeclaration: classConstructor,
-      args,
-    }
-
-    this.registrations.set(name, registration)
-  }
-
-  registerClass(name: string | DIContainerKey<any>, classConstructor: any) {
-    const registration: RegistrationFactory<InstanceType<typeof classConstructor>> = {
-      type: RegistrationType.FACTORY,
-      ClassDeclaration: classConstructor,
-    }
-
-    this.registrations.set(name, registration)
-  }
-
-  registerFunction(name: string | DIContainerKey<any>, functionFactory: (...args: any[]) => any) {
-    const registration: RegistrationFunction<ReturnType<typeof functionFactory>> = {
-      type: RegistrationType.FUNCTION,
-      executor: functionFactory,
-    }
-
-    this.registrations.set(name, registration)
-  }
-
-  registerValue(name: string | DIContainerKey<any>, value: any) {
-    const registration: RegistrationValue = {
-      type: RegistrationType.VALUE,
-      value,
-    }
-
-    this.registrations.set(name, registration)
-  }
-
-  alias(name: string | DIContainerKey<any>, alias: string | DIContainerKey<any>) {
-    if (!this.registrations.has(name))
-      throw new Error(`Doesnt have registered container with name ${String(name)}`)
-
-    this.aliases.set(alias, name)
-  }
-
-  get<T>(name: string | DIContainerKey<T>, args?: any[]): T {
-    const registration = this.registrations.get(this.getName(name)) as Registration
-
-    switch (registration.type) {
-      case RegistrationType.FACTORY: {
-        const factory: RegistrationFactory<T> = (registration as RegistrationFactory<T>)
-        return new factory.ClassDeclaration(...(args ?? []))
-      }
-
-      case RegistrationType.FUNCTION: {
-        const func: RegistrationFunction<T> = (registration as RegistrationFunction<T>)
-        return func.executor(...(args ?? []))
-      }
-
-      case RegistrationType.SINGLETON: {
-        const singleton: RegistrationSingleton<T> = (registration as RegistrationSingleton<T>)
-        if (!singleton.instance)
-          singleton.instance = new singleton.ClassDeclaration(...singleton.args)
-
-        return singleton.instance
-      }
-
-      case RegistrationType.VALUE: {
-        return (registration as RegistrationValue).value
-      }
+  register<T>(name: string | DIContainerKey<T>, value: any, config?: RegistrationConfiguration<T>): void {
+    switch (true) {
+      case isClass(value):
+        return this.addRegistration<T>(name, (params) => new value({...config?.params, ...params}), config)
+      case typeof value === "function":
+        return this.addRegistration<T>(name, (params) => value({...config?.params, ...params}), config)
       default:
-        throw new Error(`Unknown type${registration.type}`)
+        return this.addRegistration<T>(name, () => value, config)
     }
   }
 
-  private getName(nameOrAlias: string | DIContainerKey<any>): string | DIContainerKey<any> {
-    if (this.registrations.has(nameOrAlias))
-      return nameOrAlias
+  /**
+   * @deprecated use register instead
+   * @param name
+   * @param classConstructor
+   * @param params
+   */
+  registerSingleton(name: ContainerName<any>, classConstructor: any, params: any[]) {
+    this.register(name, classConstructor, {singleton: true, params})
+  }
 
-    const name = this.aliases.get(nameOrAlias)
-    if (!name)
-      throw new Error('Does not has registered name or alias in container')
+  /**
+   * @deprecated use register instead
+   * @param name
+   * @param classConstructor
+   */
+  registerClass(name: ContainerName<any>, classConstructor: any) {
+    this.register(name, classConstructor)
+  }
 
-    return name
+  /**
+   * @deprecated use register instead
+   * @param name
+   * @param functionFactory
+   */
+  registerFunction(name: ContainerName<any>, functionFactory: (...args: any[]) => any) {
+    this.register(name, functionFactory)
+  }
+
+  /**
+   *
+   * @deprecated use register instead
+   * @param name
+   * @param value
+   */
+  registerValue(name: ContainerName<any>, value: any) {
+    this.register(name, value, {singleton: true})
+  }
+
+  aliases(name: ContainerName<any>, aliases: Iterable<ContainerName<any>>) {
+    const registration = this.getRegistration(name)
+
+    for (let alias of aliases) {
+      registration.aliases.add(alias)
+    }
+  }
+
+  unregister(name: ContainerName<any>) {
+    this.getRegistration(name).unregister()
+  }
+
+  get<T>(name: string | DIContainerKey<T>, params?: Record<string, any>): T {
+    const registration = this.getRegistration<T>(name)
+
+    if (registration.persist) {
+      if (!registration.instance) {
+        registration.instance = registration.executor(params)
+      }
+      return registration.instance
+    }
+
+    return registration.executor(params)
+  }
+
+  private addRegistration<T>(name: string | DIContainerKey<T>, executor: (params?: Record<string, any>) => T, config?: RegistrationConfiguration<T>) {
+    const registration: Registration<T> = {
+      executor,
+      persist: config?.singleton || false,
+      aliases: new Set<ContainerName<T>>(config?.aliases),
+      unregister: () => this.registrations.delete(name)
+    }
+
+    this.registrations.set(name, registration)
+  }
+
+  private getRegistration<T>(name: ContainerName<T>): Registration<T> {
+    for (let [registrationName, registration] of this.registrations) {
+      if (registrationName === name || registration.aliases.has(name)) {
+        return  registration
+      }
+    }
+
+    throw new Error('Does not has registered name or alias in container')
   }
 }
 
