@@ -25,26 +25,40 @@ import { DIContainer, DiContainerKey } from '@umecode/di-container'
 const container = new DIContainer()
 ```
 
-Register singletons
+You can use Symbols or strings as keys, but only with Symbols result will autotyped
 ```ts
 // Use Symbols keys for auto typing result like or string
-const filesystem = Symbol() as DiContainerKey<IFileSystem>
+const SomeClassKey = Symbol() as DiContainerKey<ISomeClass>
 
-container.registerSingleton(filesystem, SomeFileSystemClass)
+container.registerClass(SomeClassKey, SomeClass)
+// Somewhere...
+const instance: ISomeClass = container.get(SomeClassKey) // It's autotyped for ISomeClass becouse of Symbol key
 
-const SomeFileSystemClassInstance: IFileSystem = container.get(filesystem) // It's autotyped for IFileSystem becouse of Symbol key
+// Or use string keys but return type need set manually
+container.registerSingleton('some-class2', SomeClass2)
+// Somewhere...
+const instance2: ISomeClass2 = container.get<ISomeClass2>('some-class2')
+```
 
-// Or use string keys but set return type manually
-container.registerSingleton('fs', SomeOtherServieClass)
-// Like this
-const someOtherServiceClassInstance:ISuperService = container.get<ISuperService>('fs')
-
-// Use aliases if it needed by setting pair register key and new alias
+Use aliases if it needed by setting pair register key and new alias
+```ts
+container.registerSingleton('filesystem', SomeFileSystemClass)
 container.alias('fs', 'filesystem')
 container.alias('fs', 'same-fs')
 
 container.get('fs') === container.get('filesystem') === container.get('same-fs') // true
+```
 
+Register singletons
+```ts
+const filesystem = Symbol() as DiContainerKey<IFileSystem>
+
+container.registerSingleton(filesystem, SomeFileSystemClass)
+
+const SomeClassInstance: IFileSystem = container.get(filesystem) // It's autotyped for IFileSystem becouse of Symbol key
+const SomeClassInstance2: IFileSystem = container.get(filesystem) // It's autotyped for IFileSystem becouse of Symbol key
+
+SomeClassInstance === SomeClassInstance2 // true
 ```
 Or register classes
 ```ts
