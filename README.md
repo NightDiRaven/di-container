@@ -16,6 +16,23 @@ It's very simple DI Container without injection into class with meta-data with t
  yarn add @umecode/di-container
 ```
 
+## API
+#### DIContainer
+```
+register(name: string | Symbol<T>, value: class | function | any, options: RegistrationOptions)
+get(name: string | Symbol<T>, params?: Record<string, any>)
+unregister(name: string | Symbol<T>)
+```
+
+#### type RegistrationOptions
+```
+{
+  singleton?: boolean, //On first get it will stored and after return stored value
+  aliases?: Iterable<string | Symbol<T>>, //Any aliases for get
+  params?: Record<string, any> //this object will pass into class constructor or function call, ignored for other value types
+}
+```
+
 ## Usage
 
 Create container
