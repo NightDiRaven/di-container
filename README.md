@@ -40,47 +40,38 @@ container.registerSingleton('some-class2', SomeClass2)
 const instance2: ISomeClass2 = container.get<ISomeClass2>('some-class2')
 ```
 
-Use aliases if it needed by setting pair register key and new alias
+Full example
 ```ts
-container.register('filesystem', SomeFileSystemClass, {aliases: ['filesystem', 'same-fs']})
-
-// Or set it up after register like this
-container.aliases('fs', ['filesystem', 'same-fs'])
+container.register('filesystem', SomeFileSystemClass, {
+  singleton: true, //Optional: On first get it will stored and after return stored value
+  aliases: ['filesystem', 'same-fs'], //Optional: Any aliases for get
+  params: {defaultValue: 22} //Optional: this object will pass into class constructor or function call, ignored for other value types
+})
 
 container.get('fs') === container.get('filesystem') === container.get('same-fs') // true
 ```
 
-Register singletons
-```ts
-const filesystem = Symbol() as DiContainerKey<IFileSystem>
-
-container.registerSingleton(filesystem, SomeFileSystemClass)
-
-const SomeClassInstance: IFileSystem = container.get(filesystem) // It's autotyped for IFileSystem becouse of Symbol key
-const SomeClassInstance2: IFileSystem = container.get(filesystem) // It's autotyped for IFileSystem becouse of Symbol key
-
-SomeClassInstance === SomeClassInstance2 // true
-```
-Or register classes
+Register classes
 ```ts
 // Use Symbols keys for auto typing result like or just strings
 const superRemoteClass = Symbol() as DiContainerKey<ISuperRemoteClass>
 
-container.registerClass(superRemoteClass, SuperRemoteClass)
+container.register(superRemoteClass, SuperRemoteClass, {params: baseArgObject})
 
-const remote: ISuperRemoteClass = container.get(superRemoteClass, ...contructorArgs) // It's autotyped for ISuperRemoteClass
-const remote2: ISuperRemoteClass = container.get(superRemoteClass, ...contructorArgs) // other instance of this class
-const remote3: ISuperRemoteClass = container.get(superRemoteClass, ...contructorArgs) // another instance of this class
+const remote2: ISuperRemoteClass = container.get(superRemoteClass) // other instance of this class
+const remote3: ISuperRemoteClass = container.get(superRemoteClass) // another instance of this class
+const remote: ISuperRemoteClass = container.get(superRemoteClass, contructorArgObject)
+// Same as const remote: ISuperRemoteClass = new SuperRemoteClass({...baseArgObject, ...contructorArgObject)
 ```
 Or register functions
 ```ts
-container.registerFunction('resource', (type, ...data) => {
-    return SomeFactory.get(type, data)
+container.register('resource', ({type}) => {
+    return SomeFactory.get(type)
 })
 
-const one: FactoredOne = container.get<FactoredOne>('resource', 'one', someData)
-const second: FactoredSecond = container.get<FactoredSecond>('resource', 'second', someData)
-const third: FactoredThird = container.get<FactoredThird>('resource', 'third', someData)
+const one: FactoredOne = container.get<FactoredOne>('resource', {type: 'first'})
+const second: FactoredSecond = container.get<FactoredSecond>('resource', {type: 'second'})
+const third: FactoredThird = container.get<FactoredThird>('resource', {type: 'third'})
 
 ```
 Or register values
@@ -95,6 +86,17 @@ container.registerValue('config', Object.freeze({
 }))
 
 const config: Config = container.get<Config>('config')
+```
+Register classes or functions as singletons
+```ts
+const filesystem = Symbol() as DiContainerKey<IFileSystem>
+
+container.register(filesystem, SomeFileSystemClass, {singleton: true})
+
+const SomeClassInstance: IFileSystem = container.get(filesystem) // It's autotyped for IFileSystem becouse of Symbol key
+const SomeClassInstance2: IFileSystem = container.get(filesystem) // It's autotyped for IFileSystem becouse of Symbol key
+
+SomeClassInstance === SomeClassInstance2 // true
 ```
 
 ## Develop
