@@ -20,44 +20,6 @@ class DIContainer implements DIContainerInterface {
     }
   }
 
-  /**
-   * @deprecated use register instead
-   * @param name
-   * @param classConstructor
-   * @param params
-   */
-  registerSingleton(name: ContainerName<any>, classConstructor: any, params: any[]) {
-    this.register(name, classConstructor, {singleton: true, params})
-  }
-
-  /**
-   * @deprecated use register instead
-   * @param name
-   * @param classConstructor
-   */
-  registerClass(name: ContainerName<any>, classConstructor: any) {
-    this.register(name, classConstructor)
-  }
-
-  /**
-   * @deprecated use register instead
-   * @param name
-   * @param functionFactory
-   */
-  registerFunction(name: ContainerName<any>, functionFactory: (...args: any[]) => any) {
-    this.register(name, functionFactory)
-  }
-
-  /**
-   *
-   * @deprecated use register instead
-   * @param name
-   * @param value
-   */
-  registerValue(name: ContainerName<any>, value: any) {
-    this.register(name, value, {singleton: true})
-  }
-
   aliases(name: ContainerName<any>, aliases: Iterable<ContainerName<any>>) {
     const registration = this.getRegistration(name)
 

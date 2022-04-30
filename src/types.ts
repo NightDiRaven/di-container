@@ -24,12 +24,6 @@ export interface Registration<T> {
 export interface DIContainerInterface {
   register<T>(name: ContainerName<T>, classConstructor: T, config?: RegistrationConfiguration<T>): void
 
-  registerSingleton(name: ContainerName<any>, classConstructor: any, params: any[]): void
-
-  registerClass(name: ContainerName<any>, classConstructor: any): void
-
-  registerFunction(name: ContainerName<any>, classConstructorOrCallback: () => any): void
-
   aliases(name: ContainerName<any>, aliases: Iterable<ContainerName<any>>): void
 
   get<T>(name: string | DIContainerKey<T>, args?: any[]): T
