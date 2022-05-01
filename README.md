@@ -155,7 +155,7 @@ class Test {
 }
 
 const test = container.inject(Test, {service: [1, 2, 3, 4]})
-// const test: Test = new Test({$services: container.get('services'), service: [1, 2, 3, 4]})
+// const test: Test = new Test({$service: container.get('service'), service: [1, 2, 3, 4]})
 
 ```
 Be careful: It can be unhandled (you need handle it manually) `RangeError` circular throw error, if you call circular injection like this
