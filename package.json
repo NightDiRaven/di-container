@@ -1,6 +1,6 @@
 {
   "name": "@umecode/di-container",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "description": "It's very simple DI Container without injection into class with meta-data with typesript",
   "keywords": [],
   "homepage": "https://github.com/nightdiraven/di-container#readme",
