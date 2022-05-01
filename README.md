@@ -115,7 +115,7 @@ Proxy(params) allow get by keys registered containers from params object
 ```ts
 import {DIContainer, DiContainerKey} from '@umecode/di-container'
 
-const container = new DIContainer({injectPrefix: '$'})
+const container = new DIContainer()
 
 const key = Symbol() as DiContainerKey<ISomeClass>
 // Register anything with string keys or aliases
@@ -123,7 +123,7 @@ container.register(key, SomeClass, {aliases:['someClass']})
 container.register('someClass2', SomeClass2)
 
 class TestClass {
-  constructor({someClass: ISomeClass, someClass2: ISomeClass2}) {
+  constructor({}: {someClass: ISomeClass, someClass2: ISomeClass2}) {
     
   }
 }
@@ -142,10 +142,26 @@ const test3 = container.get<TestClass>('testClass')
 // Same as const test3: TestClass = new TestClass({someClass: new SomeClass(), someClass2: new SomeClass2()})
 
 ```
+You can set up injectPrefix for props
+
+```ts
+const container = new DIContainer({injectPrefix: '$'})
+  
+...
+
+class Test {
+  constructor({$service, service}: {$service: SomeService, service: number[]}) {
+  }
+}
+
+const test = container.inject(Test, {service: [1, 2, 3, 4]})
+// const test: Test = new Test({$services: container.get('services'), service: [1, 2, 3, 4]})
+
+```
 Be careful: It can be unhandled (you need handle it manually) `RangeError` circular throw error, if you call circular injection like this
 ```ts
 class SomeClass {
-  constructor({prop: SomeClass})
+  constructor({prop}: {prop: SomeClass}) {}
 }
 
 ```
