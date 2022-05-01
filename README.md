@@ -2,6 +2,8 @@
 
 It's very simple DI Container without injection into class with meta-data with typesript
 
+Injection into object param through proxy
+
 ## Install
 
 ```sh
@@ -19,16 +21,19 @@ It's very simple DI Container without injection into class with meta-data with t
 ## API
 #### DIContainer
 ```
+constructor({injectPrefix?: string = '$'})
 register(name: string | Symbol<T>, value: class | function | any, options: RegistrationOptions)
 get(name: string | Symbol<T>, params?: Record<string, any>)
+inject(value: Class | Function, params?: Record<string, any>): new Class(Proxy(params)) | ReturnType<function(Proxy(params))> 
 unregister(name: string | Symbol<T>)
 ```
 
 #### type RegistrationOptions
 ```
 {
-  singleton?: boolean, //On first get it will stored and after return stored value
+  singleton?: boolean = false, //On first get it will stored and after return stored value
   aliases?: Iterable<string | Symbol<T>>, //Any aliases for get
+  inject?: boolean = true, // If true, container will try map params name to registered items
   params?: Record<string, any> //this object will pass into class constructor or function call, ignored for other value types
 }
 ```
@@ -103,6 +108,46 @@ const SomeClassInstance: IFileSystem = container.get(filesystem) // It's autotyp
 const SomeClassInstance2: IFileSystem = container.get(filesystem) // It's autotyped for IFileSystem becouse of Symbol key
 
 SomeClassInstance === SomeClassInstance2 // true
+```
+Inject by params keys
+Proxy(params) allow get by keys registered containers from params object
+
+```ts
+import {DIContainer, DiContainerKey} from '@umecode/di-container'
+
+const container = new DIContainer({injectPrefix: '$'})
+
+const key = Symbol() as DiContainerKey<ISomeClass>
+// Register anything with string keys or aliases
+container.register(key, SomeClass, {aliases:['someClass']})
+container.register('someClass2', SomeClass2)
+
+class TestClass {
+  constructor({someClass: ISomeClass, someClass2: ISomeClass2}) {
+    
+  }
+}
+
+const test = container.inject(TestClass)
+// Same as const test: TestClass = new TestClass({someClass: new SomeClass(), someClass2: new SomeClass2()})
+
+// If you use only Symbol keys it can be like this
+const test2 = container.inject(TestClass, {someClass: key})
+// Same as const test2: TestClass = new TestClass({someClass: container.get(key), someClass2: new SomeClass2()})
+
+// Or you can register TestClass too
+container.register('testClass', TestClass)
+
+const test3 = container.get<TestClass>('testClass')
+// Same as const test3: TestClass = new TestClass({someClass: new SomeClass(), someClass2: new SomeClass2()})
+
+```
+Be careful: It can be unhandled (you need handle it manually) `RangeError` circular throw error, if you call circular injection like this
+```ts
+class SomeClass {
+  constructor({prop: SomeClass})
+}
+
 ```
 
 ## Develop

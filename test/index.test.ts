@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import {describe, expect, it, Test} from 'vitest'
 import {DIContainer, DIContainerKey} from "../dist";
 
 
@@ -67,5 +67,32 @@ describe('should', () => {
     container.unregister(key)
 
     expect(() => container.get(key)).to.throw("Does not has registered name or alias in container");
+  })
+
+  it('Inject test', () => {
+    const container = new DIContainer({injectPrefix: false})
+    const key = Symbol() as DIContainerKey<Config>
+
+    interface Config {
+      path: string,
+      test: boolean
+    }
+
+    container.register(key, {path: 'test-path'}, {aliases: ['config']})
+
+    class TestClass {
+      path: string
+      constructor({config}: {config: Config}) {
+        this.path = config.path
+      }
+    }
+
+    console.log(container.inject(TestClass), 46)
+
+    expect(container.inject(({config}: {config: Config}) => {
+      return config
+    }, {config: key})).toEqual(container.get(key));
+    expect( container.inject(TestClass).path).toEqual('test-path');
+    expect( container.inject(TestClass).path).toEqual('test-path');
   })
 })

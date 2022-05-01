@@ -4,10 +4,13 @@ export interface DIContainerKey<T> extends Symbol {
 
 }
 
+
 export type ContainerName<T> = string | DIContainerKey<T>
+export type Inject<T> = ContainerName<T> & Partial<T>
 
 export interface RegistrationConfiguration<T> {
   singleton?: boolean,
+  inject?: boolean,
   params?: Record<string, any>,
   aliases?: ContainerName<T>[]
 }
@@ -27,4 +30,11 @@ export interface DIContainerInterface {
   aliases(name: ContainerName<any>, aliases: Iterable<ContainerName<any>>): void
 
   get<T>(name: string | DIContainerKey<T>, args?: any[]): T
+
+  inject<T>(value: (params: Record<string, ContainerName<T>>) => any): void
+  inject<T>(value: any, params?: Record<string, any>): T
+}
+
+export interface DIContainerConfiguration {
+  injectPrefix?: string|false
 }
