@@ -1,6 +1,6 @@
 {
   "name": "@umecode/di-container",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "It's very simple DI Container without injection into class with meta-data with typesript",
   "keywords": [
     "ioc",
