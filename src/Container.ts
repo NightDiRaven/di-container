@@ -16,7 +16,7 @@ class Container {
     return value(this.injectIn(params))
   }
 
-  register(name: ContainerName, value: (params: Record<any, any>) => any, config: RegistrationConfiguration = {}): void {
+  register(name: ContainerName, value: (params: any) => any, config: RegistrationConfiguration = {}): void {
     const container = this
     const registration: Registration = {
       executor(params?: Record<string | number | symbol, any>) {
