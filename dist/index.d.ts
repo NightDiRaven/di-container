@@ -12,7 +12,6 @@ interface DIContainerInterface {
     register<T>(name: ContainerName<T>, classConstructor: T, config?: RegistrationConfiguration<T>): void;
     aliases(name: ContainerName<any>, aliases: Iterable<ContainerName<any>>): void;
     get<T>(name: string | DIContainerKey<T>, args?: any[]): T;
-    inject<T>(value: (params: Record<string, ContainerName<T>>) => any): void;
     inject<T>(value: any, params?: Record<string, any>): T;
 }
 interface DIContainerConfiguration {
@@ -24,7 +23,7 @@ declare class DIContainer implements DIContainerInterface {
     private readonly injectPrefix;
     constructor({ injectPrefix }?: DIContainerConfiguration);
     inject<T>(value: T, params?: Record<string, any>): T;
-    register<T>(name: string | DIContainerKey<T>, value: any, config?: RegistrationConfiguration<T>): void;
+    register<T>(name: string | DIContainerKey<T>, value: any, { singleton, inject, params: base, aliases }?: RegistrationConfiguration<T>): void;
     aliases(name: ContainerName<any>, aliases: Iterable<ContainerName<any>>): void;
     unregister(name: ContainerName<any>): void;
     get<T>(name: string | DIContainerKey<T>, params?: Record<string, any>): T;

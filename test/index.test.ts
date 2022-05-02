@@ -82,17 +82,21 @@ describe('should', () => {
 
     class TestClass {
       path: string
-      constructor({config}: {config: Config}) {
+      param: string
+      constructor({config, param}: {config: Config, param: string}) {
         this.path = config.path
+        this.param = param
       }
     }
 
-    console.log(container.inject(TestClass), 46)
+    container.register('testClass', TestClass, {params: {param: 44}})
 
-    expect(container.inject(({config}: {config: Config}) => {
+    expect(container.get('testClass').param === 44).toEqual(true)
+
+    expect(container.inject<Config>(({config}: {config: Config}): Config => {
       return config
     }, {config: key})).toEqual(container.get(key));
-    expect( container.inject(TestClass).path).toEqual('test-path');
+
     expect( container.inject(TestClass).path).toEqual('test-path');
   })
 })

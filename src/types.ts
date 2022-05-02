@@ -4,9 +4,13 @@ export interface DIContainerKey<T> extends Symbol {
 
 }
 
+type ContainerKey<T> = symbol & DIContainerKey<T>
+
+export type ContainerRegistrations<T extends ContainerKey<any> = ContainerKey<any>, U = any> = Record<T, U>
 
 export type ContainerName<T> = string | DIContainerKey<T>
 export type Inject<T> = ContainerName<T> & Partial<T>
+export type ContainerProxy<T extends Record<any, any>> = ProxyHandler<T> & ContainerRegistrations
 
 export interface RegistrationConfiguration<T> {
   singleton?: boolean,
@@ -31,7 +35,6 @@ export interface DIContainerInterface {
 
   get<T>(name: string | DIContainerKey<T>, args?: any[]): T
 
-  inject<T>(value: (params: Record<string, ContainerName<T>>) => any): void
   inject<T>(value: any, params?: Record<string, any>): T
 }
 

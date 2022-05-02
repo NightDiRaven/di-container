@@ -8,11 +8,11 @@ class DIContainer {
   inject(value, params) {
     return DIContainer.exec(value, this.injectIn({ ...params }));
   }
-  register(name, value, config = { singleton: false, inject: true }) {
-    if (config.inject) {
-      this.addRegistration(name, (params) => DIContainer.exec(value, this.injectIn({ ...config?.params, ...params })), config);
+  register(name, value, { singleton = false, inject = true, params: base, aliases } = {}) {
+    if (inject) {
+      this.addRegistration(name, (params) => DIContainer.exec(value, this.injectIn({ ...base, ...params })), { singleton, aliases });
     } else {
-      this.addRegistration(name, (params) => DIContainer.exec(value, { ...config?.params, ...params }), config);
+      this.addRegistration(name, (params) => DIContainer.exec(value, { ...base, ...params }), { singleton, aliases });
     }
   }
   aliases(name, aliases) {
