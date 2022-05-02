@@ -23,7 +23,7 @@ declare class DIContainer implements DIContainerInterface {
     private readonly injectPrefix;
     constructor({ injectPrefix }?: DIContainerConfiguration);
     inject<T>(value: T, params?: Record<string, any>): T;
-    register<T>(name: string | DIContainerKey<T>, value: any, { singleton, inject, params: base, aliases }?: RegistrationConfiguration<T>): void;
+    register<T>(name: string | DIContainerKey<T>, value: any, config?: RegistrationConfiguration<T>): void;
     aliases(name: ContainerName<any>, aliases: Iterable<ContainerName<any>>): void;
     unregister(name: ContainerName<any>): void;
     get<T>(name: string | DIContainerKey<T>, params?: Record<string, any>): T;

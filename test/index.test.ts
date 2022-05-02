@@ -89,9 +89,11 @@ describe('should', () => {
       }
     }
 
-    container.register('testClass', TestClass, {params: {param: 44}})
+    container.register('testClass', TestClass, {singleton: true, params: {param: 44}})
 
-    expect(container.get('testClass').param === 44).toEqual(true)
+    const test = container.get('testClass')
+    expect(test.param === 44).toEqual(true)
+    expect(test.path === 'test-path').toEqual(true)
 
     expect(container.inject<Config>(({config}: {config: Config}): Config => {
       return config

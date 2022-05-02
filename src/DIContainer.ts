@@ -16,11 +16,11 @@ class DIContainer implements DIContainerInterface {
     return DIContainer.exec(value, this.injectIn({...params}))
   }
 
-  register<T>(name: string | DIContainerKey<T>, value: any, {singleton = false, inject = true, params: base, aliases}: RegistrationConfiguration<T> = {}): void {
-    if (inject) {
-      this.addRegistration(name, (params) => DIContainer.exec(value, this.injectIn({...base, ...params})), {singleton, aliases})
+  register<T>(name: string | DIContainerKey<T>, value: any, config: RegistrationConfiguration<T> = {}): void {
+    if (config.inject ?? true) {
+      this.addRegistration(name, (params) => DIContainer.exec(value, this.injectIn({...config.params, ...params})), config)
     } else {
-      this.addRegistration(name, (params) => DIContainer.exec(value, {...base, ...params}), {singleton, aliases})
+      this.addRegistration(name, (params) => DIContainer.exec(value, {...config.params, ...params}), config)
     }
   }
 

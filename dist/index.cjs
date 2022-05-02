@@ -16,11 +16,11 @@ class DIContainer {
   inject(value, params) {
     return DIContainer.exec(value, this.injectIn({ ...params }));
   }
-  register(name, value, { singleton = false, inject = true, params: base, aliases } = {}) {
-    if (inject) {
-      this.addRegistration(name, (params) => DIContainer.exec(value, this.injectIn({ ...base, ...params })), { singleton, aliases });
+  register(name, value, config = {}) {
+    if (config.inject ?? true) {
+      this.addRegistration(name, (params) => DIContainer.exec(value, this.injectIn({ ...config.params, ...params })), config);
     } else {
-      this.addRegistration(name, (params) => DIContainer.exec(value, { ...base, ...params }), { singleton, aliases });
+      this.addRegistration(name, (params) => DIContainer.exec(value, { ...config.params, ...params }), config);
     }
   }
   aliases(name, aliases) {
