@@ -1,8 +1,14 @@
 {
   "name": "@umecode/di-container",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "It's very simple DI Container without injection into class with meta-data with typesript",
-  "keywords": ["ioc", "di", "typescript", "container", "ts"],
+  "keywords": [
+    "ioc",
+    "di",
+    "typescript",
+    "container",
+    "ts"
+  ],
   "homepage": "https://github.com/nightdiraven/di-container#readme",
   "bugs": {
     "url": "https://github.com/nightdiraven/di-container/issues"
