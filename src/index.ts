@@ -1,6 +1,6 @@
-import DIContainer from './DIContainer'
-import type { DIContainerKey, Inject } from './types'
+import Container from './Container'
+import type { ContainerKey, ContainerName, Inject } from './types'
 
-export { DIContainer }
-export type { DIContainerKey }
+export { Container }
 export type { Inject }
+export type { ContainerName }

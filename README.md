@@ -19,15 +19,18 @@ Injection into object param through proxy
 ```
 
 ## API
-#### DIContainer
+#### Container
 ```
 constructor({injectPrefix?: string = '$'})
-register(name: string | Symbol<T>, value: class | function | any, options: RegistrationOptions)
-get(name: string | Symbol<T>, params?: Record<string, any>)
-inject(value: Class | Function, params?: Record<string, any>): new Class(Proxy(params)) | ReturnType<function(Proxy(params))> 
-unregister(name: string | Symbol<T>)
+register(name: ContainerName<T>, (Proxy<params>) => any, options: RegistrationOptions)
+get(name: ContainerName<T>, params?: Record<string, any>)
+inject(value: (Proxy<params>) => T, params?: Record<string, any>): T 
+unregister(name: ContainerName<T>)
 ```
-
+#### type ContainerName
+```ts
+containerName<T> = string | symbol<T>
+```
 #### type RegistrationOptions
 ```
 {
@@ -42,70 +45,33 @@ unregister(name: string | Symbol<T>)
 
 Create container
 ```ts
-import { DIContainer, DiContainerKey } from '@umecode/di-container'
+import { Container, ContainerName } from '@umecode/di-container'
 
 const container = new DIContainer()
 ```
 
-You can use Symbols or strings as keys, but only with Symbols result will autotyped
+You can use Symbols or strings as keys, but only with Symbols result will auto typed
 ```ts
 // Use Symbols keys for auto typing result
-const SomeClassKey = Symbol() as DiContainerKey<ISomeClass>
+const someKey = Symbol() as ContainerName<ISomeClass>
 
-container.register(SomeClassKey, SomeClass)
+container.register(someKey, () => new SomeClass())
 // Somewhere...
-const instance: ISomeClass = container.get(SomeClassKey) // It's autotyped for ISomeClass becouse of Symbol key
+const instance: ISomeClass = container.get(someKey) // It's autotyped for ISomeClass becouse of Symbol key
 
 // Or use string keys but return type need set manually
-container.register('some-class2', SomeClass2)
+container.register('something', () => 'anything')
 // Somewhere...
-const instance2: ISomeClass2 = container.get<ISomeClass2>('some-class2')
+const test: string = container.get<string>('something') // anything
 ```
-
-Register classes
+Register as singletons
 ```ts
-// Use Symbols keys for auto typing result like or just strings
-const superRemoteClass = Symbol() as DiContainerKey<ISuperRemoteClass>
+const filesystem = Symbol() as ContainerName<IFileSystem>
 
-container.register(superRemoteClass, SuperRemoteClass, {params: baseArgObject})
+container.register(filesystem, () => new SomeFileSystemClass(), {singleton: true})
 
-const remote2: ISuperRemoteClass = container.get(superRemoteClass) // other instance of this class
-const remote3: ISuperRemoteClass = container.get(superRemoteClass) // another instance of this class
-const remote: ISuperRemoteClass = container.get(superRemoteClass, contructorArgObject)
-// Same as const remote: ISuperRemoteClass = new SuperRemoteClass({...baseArgObject, ...contructorArgObject)
-```
-Or register functions
-```ts
-container.register('resource', ({type}) => {
-    return SomeFactory.get(type)
-})
-
-const one: FactoredOne = container.get<FactoredOne>('resource', {type: 'first'})
-const second: FactoredSecond = container.get<FactoredSecond>('resource', {type: 'second'})
-const third: FactoredThird = container.get<FactoredThird>('resource', {type: 'third'})
-
-```
-Or register values
-```ts
-
-interface Config {
-    url: string
-}
-
-container.registerValue('config', Object.freeze({
-    url: 'testUrl'
-}))
-
-const config: Config = container.get<Config>('config')
-```
-Register classes or functions as singletons
-```ts
-const filesystem = Symbol() as DiContainerKey<IFileSystem>
-
-container.register(filesystem, SomeFileSystemClass, {singleton: true})
-
-const SomeClassInstance: IFileSystem = container.get(filesystem) // It's autotyped for IFileSystem becouse of Symbol key
-const SomeClassInstance2: IFileSystem = container.get(filesystem) // It's autotyped for IFileSystem becouse of Symbol key
+const SomeClassInstance: IFileSystem = container.get(filesystem)
+const SomeClassInstance2: IFileSystem = container.get(filesystem)
 
 SomeClassInstance === SomeClassInstance2 // true
 ```
@@ -113,14 +79,27 @@ Inject by params keys
 Proxy(params) allow get by keys registered containers from params object
 
 ```ts
-import {DIContainer, DiContainerKey} from '@umecode/di-container'
+import {Container, ContainerKey} from '@umecode/di-container'
 
-const container = new DIContainer()
+const container = new Container()
 
-const key = Symbol() as DiContainerKey<ISomeClass>
+const key = Symbol() as ContainerKey<ISomeClass>
 // Register anything with string keys or aliases
-container.register(key, SomeClass, {aliases:['someClass']})
-container.register('someClass2', SomeClass2)
+container.register(key, params => new SomeClass(), {aliases:['someClass']})
+container.register('someClass2', params => new SomeClass2())
+
+// Manual inject into param functions
+// Params object is Proxy on params with getters for someClass and someClass2:
+const res = container.inject(({someClass: ISomeClass}) => {
+  // someClass is container.get('someClass')
+})
+
+const res2 = container.inject(({someClass: ISomeClass, ...other}) => {
+  // someClass is container.get('someClass')
+  // other is {param1: '1', param2: 2}
+}, {param1: '1', param2: 2})
+
+// Auto inject into param functions will be for any container.get()
 
 class TestClass {
   constructor({}: {someClass: ISomeClass, someClass2: ISomeClass2}) {
@@ -128,15 +107,15 @@ class TestClass {
   }
 }
 
-const test = container.inject(TestClass)
+const test = container.inject(params => new TestClass(params))
 // Same as const test: TestClass = new TestClass({someClass: new SomeClass(), someClass2: new SomeClass2()})
 
 // If you use only Symbol keys it can be like this
-const test2 = container.inject(TestClass, {someClass: key})
+const test2 = container.inject(params => new TestClass(params), {someClass: key})
 // Same as const test2: TestClass = new TestClass({someClass: container.get(key), someClass2: new SomeClass2()})
 
 // Or you can register TestClass too
-container.register('testClass', TestClass)
+container.register('testClass', params => TestClass(params))
 
 const test3 = container.get<TestClass>('testClass')
 // Same as const test3: TestClass = new TestClass({someClass: new SomeClass(), someClass2: new SomeClass2()})
@@ -154,7 +133,7 @@ class Test {
   }
 }
 
-const test = container.inject(Test, {service: [1, 2, 3, 4]})
+const test = container.inject(params => new Test(params), {service: [1, 2, 3, 4]})
 // const test: Test = new Test({$service: container.get('service'), service: [1, 2, 3, 4]})
 
 ```

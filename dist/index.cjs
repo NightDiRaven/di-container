@@ -2,26 +2,29 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-const isClass = require('is-class');
-
-function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e["default"] : e; }
-
-const isClass__default = /*#__PURE__*/_interopDefaultLegacy(isClass);
-
-class DIContainer {
+class Container {
   constructor({ injectPrefix = false } = {}) {
     this.registrations = /* @__PURE__ */ new Map();
     this.injectPrefix = injectPrefix;
   }
   inject(value, params) {
-    return DIContainer.exec(value, this.injectIn({ ...params }));
+    params = Object.assign({}, params);
+    return value(this.injectIn(params));
   }
   register(name, value, config = {}) {
-    if (config.inject ?? true) {
-      this.addRegistration(name, (params) => DIContainer.exec(value, this.injectIn({ ...config.params, ...params })), config);
-    } else {
-      this.addRegistration(name, (params) => DIContainer.exec(value, { ...config.params, ...params }), config);
-    }
+    const container = this;
+    const registration = {
+      executor(params) {
+        params = Object.assign({}, this.params, params);
+        return value(this.inject ? container.injectIn(params) : params);
+      },
+      singleton: config.singleton || false,
+      inject: config.inject || true,
+      params: config.params,
+      aliases: new Set(config?.aliases),
+      unregister: () => this.registrations.delete(name)
+    };
+    this.registrations.set(name, registration);
   }
   aliases(name, aliases) {
     const registration = this.getRegistration(name, true);
@@ -33,28 +36,19 @@ class DIContainer {
     this.getRegistration(name, true).unregister();
   }
   get(name, params) {
-    return DIContainer.getFromRegistration(this.getRegistration(name, true), params);
+    return Container.getFromRegistration(this.getRegistration(name, true), params);
   }
   static getFromRegistration(registration, params) {
     if (!registration) {
       return void 0;
     }
-    if (registration.persist) {
+    if (registration.singleton) {
       if (!registration.instance) {
         registration.instance = registration.executor(params);
       }
       return registration.instance;
     }
     return registration.executor(params);
-  }
-  addRegistration(name, executor, config) {
-    const registration = {
-      executor,
-      persist: config?.singleton || false,
-      aliases: new Set(config?.aliases),
-      unregister: () => this.registrations.delete(name)
-    };
-    this.registrations.set(name, registration);
   }
   getRegistration(name, throwError) {
     for (let [registrationName, registration] of this.registrations) {
@@ -79,10 +73,10 @@ class DIContainer {
               }
               regName = name.substring(this.injectPrefix.length);
             }
-            return DIContainer.getFromRegistration(this.getRegistration(regName)) ?? DIContainer.getFromRegistration(this.getRegistration(value)) ?? value;
+            return Container.getFromRegistration(this.getRegistration(regName)) ?? Container.getFromRegistration(this.getRegistration(value)) ?? value;
           }
           case "symbol": {
-            return DIContainer.getFromRegistration(this.getRegistration(value)) ?? value;
+            return Container.getFromRegistration(this.getRegistration(value)) ?? value;
           }
           default: {
             return value;
@@ -91,17 +85,7 @@ class DIContainer {
       }
     });
   }
-  static exec(value, params) {
-    switch (true) {
-      case isClass__default(value):
-        return new value(params);
-      case typeof value === "function":
-        return value(params);
-      default:
-        return value;
-    }
-  }
 }
-const DIContainer$1 = DIContainer;
+const Container$1 = Container;
 
-exports.DIContainer = DIContainer$1;
+exports.Container = Container$1;

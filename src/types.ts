@@ -1,43 +1,32 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface DIContainerKey<T> extends Symbol {
-
+export interface ContainerKey<T> extends Symbol {
 }
 
-type ContainerKey<T> = symbol & DIContainerKey<T>
+export type ContainerName<T = string | number | symbol> = string | ContainerKey<T>
 
-export type ContainerRegistrations<T extends ContainerKey<any> = ContainerKey<any>, U = any> = Record<T, U>
+// @ts-ignore for ContainerKey === symbol
+export type RegistrationsMap<T extends ContainerKey<any> = ContainerKey<any>, U = any> = Map<ContainerName, Registration>
 
-export type ContainerName<T> = string | DIContainerKey<T>
 export type Inject<T> = ContainerName<T> & Partial<T>
-export type ContainerProxy<T extends Record<any, any>> = ProxyHandler<T> & ContainerRegistrations
 
-export interface RegistrationConfiguration<T> {
+export interface RegistrationConfiguration {
   singleton?: boolean,
   inject?: boolean,
   params?: Record<string, any>,
-  aliases?: ContainerName<T>[]
+  aliases?: ContainerName[]
 }
 
-export interface Registration<T> {
-  executor: (params?: Record<string, any>) => T,
-  persist: boolean
-  instance?: T
+export interface Registration{
+  executor: (params?: Record<string | number | symbol, any>) => any,
+  singleton: boolean
+  inject: boolean;
   params?: Record<string, any>
-  aliases: Set<ContainerName<T>>
+  aliases: Set<ContainerName>
+  instance?: any
   unregister: () => void
 }
 
-export interface DIContainerInterface {
-  register<T>(name: ContainerName<T>, classConstructor: T, config?: RegistrationConfiguration<T>): void
-
-  aliases(name: ContainerName<any>, aliases: Iterable<ContainerName<any>>): void
-
-  get<T>(name: string | DIContainerKey<T>, args?: any[]): T
-
-  inject<T>(value: any, params?: Record<string, any>): T
-}
-
-export interface DIContainerConfiguration {
-  injectPrefix?: string|false
+export interface ContainerConfiguration {
+  injectPrefix?: string | false
 }

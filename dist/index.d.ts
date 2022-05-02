@@ -1,37 +1,29 @@
-interface DIContainerKey<T> extends Symbol {
+interface ContainerKey<T> extends Symbol {
 }
-declare type ContainerName<T> = string | DIContainerKey<T>;
+declare type ContainerName<T = string | number | symbol> = string | ContainerKey<T>;
 declare type Inject<T> = ContainerName<T> & Partial<T>;
-interface RegistrationConfiguration<T> {
+interface RegistrationConfiguration {
     singleton?: boolean;
     inject?: boolean;
     params?: Record<string, any>;
-    aliases?: ContainerName<T>[];
+    aliases?: ContainerName[];
 }
-interface DIContainerInterface {
-    register<T>(name: ContainerName<T>, classConstructor: T, config?: RegistrationConfiguration<T>): void;
-    aliases(name: ContainerName<any>, aliases: Iterable<ContainerName<any>>): void;
-    get<T>(name: string | DIContainerKey<T>, args?: any[]): T;
-    inject<T>(value: any, params?: Record<string, any>): T;
-}
-interface DIContainerConfiguration {
+interface ContainerConfiguration {
     injectPrefix?: string | false;
 }
 
-declare class DIContainer implements DIContainerInterface {
+declare class Container {
     private readonly registrations;
     private readonly injectPrefix;
-    constructor({ injectPrefix }?: DIContainerConfiguration);
-    inject<T>(value: T, params?: Record<string, any>): T;
-    register<T>(name: string | DIContainerKey<T>, value: any, config?: RegistrationConfiguration<T>): void;
+    constructor({ injectPrefix }?: ContainerConfiguration);
+    inject<T>(value: (params: Record<any, any>) => T, params?: Record<string, any>): T;
+    register(name: ContainerName, value: (params: Record<any, any>) => any, config?: RegistrationConfiguration): void;
     aliases(name: ContainerName<any>, aliases: Iterable<ContainerName<any>>): void;
     unregister(name: ContainerName<any>): void;
-    get<T>(name: string | DIContainerKey<T>, params?: Record<string, any>): T;
+    get<T>(name: ContainerName<T>, params?: Record<string, any>): T;
     private static getFromRegistration;
-    private addRegistration;
     private getRegistration;
-    injectIn(params: Record<string | symbol, any>): ProxyHandler<typeof params>;
-    private static exec;
+    injectIn(params: Record<string | symbol, any>): typeof params;
 }
 
-export { DIContainer, DIContainerKey, Inject };
+export { Container, ContainerName, Inject };
