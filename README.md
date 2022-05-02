@@ -47,7 +47,7 @@ Create container
 ```ts
 import { Container, ContainerName } from '@umecode/di-container'
 
-const container = new DIContainer()
+const container = new Container()
 ```
 
 You can use Symbols or strings as keys, but only with Symbols result will auto typed
@@ -124,7 +124,7 @@ const test3 = container.get<TestClass>('testClass')
 You can set up injectPrefix for props
 
 ```ts
-const container = new DIContainer({injectPrefix: '$'})
+const container = new Container({injectPrefix: '$'})
   
 ...
 
