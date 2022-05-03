@@ -8,9 +8,9 @@ describe('should', () => {
 
     interface ISingletonTest {}
     class SingletonTest implements ISingletonTest{}
-    const singletonKey2 = Symbol() as ContainerName<ISingletonTest>
+    const singletonKey2 = Symbol() as ContainerName<ISingletonTest, {name: number}>
 
-    container.register(singletonKey2, () => SingletonTest, {singleton: true})
+    container.register(singletonKey2, ({name}: {name: string}) => SingletonTest, {singleton: true})
 
 
     const test = container.get(singletonKey2)

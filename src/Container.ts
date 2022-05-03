@@ -45,7 +45,7 @@ class Container {
     this.getRegistration(name, true).unregister()
   }
 
-  get<T>(name: ContainerName<T>, params?: Record<string, any>): T {
+  get<T, P>(name: ContainerName<T, P>, params?: P): T {
     return Container.getFromRegistration(this.getRegistration(name, true), params) as T
   }
 

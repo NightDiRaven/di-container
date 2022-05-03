@@ -29,7 +29,7 @@ unregister(name: ContainerName<T>)
 ```
 #### type ContainerName
 ```ts
-containerName<T> = string | symbol<T>
+containerName<ReturnType, ParametersType> = string | symbol<ReturnType, ParametersType>
 ```
 #### type RegistrationOptions
 ```
@@ -64,6 +64,17 @@ container.register('something', () => 'anything')
 // Somewhere...
 const test: string = container.get<string>('something') // anything
 ```
+Typing callback params into symbol name
+```ts
+// Use Symbols keys for auto typing result
+const someKey = Symbol() as ContainerName<ISomeClass, {name: string, service?: ISomeService}>
+
+container.register(someKey, (params: {name: string, service?: ISomeService}) => new SomeClass(params))
+// Somewhere...
+const instance: ISomeClass = container.get(someKey, {name: '222'}) // It's autotyped for ISomeClass and for params type too
+
+```
+
 Register as singletons
 ```ts
 const filesystem = Symbol() as ContainerName<IFileSystem>

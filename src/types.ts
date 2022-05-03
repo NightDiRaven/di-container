@@ -1,9 +1,9 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface ContainerKey<T> extends Symbol {
+export interface ContainerKey<T, P> extends Symbol {
 }
 
-export type ContainerName<T = string | number | symbol> = string | ContainerKey<T>
+export type ContainerName<T = string | number | symbol, P = any> = string | ContainerKey<T, P>
 
 // @ts-ignore for ContainerKey === symbol
 export type RegistrationsMap<T extends ContainerKey<any> = ContainerKey<any>, U = any> = Map<ContainerName, Registration>
